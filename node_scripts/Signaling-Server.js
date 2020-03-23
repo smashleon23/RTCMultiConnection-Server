@@ -21,7 +21,7 @@ var isAdminAuthorized = require('./verify-admin.js');
 module.exports = exports = function(socket, config) {
     config = config || {};
 
-    onConnection(socket);
+    var eventsObject = onConnection(socket);
 
     // to secure your socket.io usage: (via: docs/tips-tricks.md)
     // io.set('origins', 'https://domain.com');
@@ -655,7 +655,7 @@ module.exports = exports = function(socket, config) {
             }
         }
 
-        socket.on(socketMessageEvent, function(message, callback) {
+        function handleSocketMessageEvent(message) {
             if (message.remoteUserId && message.remoteUserId === socket.userid) {
                 // remoteUserId MUST be unique
                 return;
@@ -733,6 +733,13 @@ module.exports = exports = function(socket, config) {
             } catch (e) {
                 pushLogs(config, 'on-socketMessageEvent', e);
             }
+
+        }
+
+
+        socket.on(socketMessageEvent, function(message, callback) {
+          //handleSocketMessageEvent(message)
+
         });
 
         socket.on('is-valid-password', function(password, roomid, callback) {
@@ -1016,5 +1023,10 @@ module.exports = exports = function(socket, config) {
 
             sendToAdmin();
         });
+
+
+        return { handleSocketMessageEvent: handleSocketMessageEvent };
     }
+
+    return { handleSocketMessageEvent: eventsObject.handleSocketMessageEvent };
 };
